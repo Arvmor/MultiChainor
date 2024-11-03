@@ -25,10 +25,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
             loop {
                 if let Ok(log) = stream.recv().await {
                     // Decode the log
-                    let decoded = decode_it(&log);
-                    if decoded.is_none() {
-                        continue;
-                    }
+                    let decoded = match decode_it(&log) {
+                        Some((pool, date)) => format!("Address: {pool}, Unlock Date: {date}"),
+                        None => continue,
+                    };
 
                     // Send a message to Discord
                     send_discord_message(decoded).ok();
