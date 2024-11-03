@@ -59,7 +59,23 @@ macro_rules! load_env_vars {
     };
 }
 
+/// Chains
+pub struct Chains(pub Vec<Url>);
+impl FromStr for Chains {
+    type Err = Box<dyn Error>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let chains = s
+            .split(',')
+            .map(|chain| Url::from_str(chain).map_err(|e| e.into()))
+            .collect::<Result<Vec<Url>, Box<dyn Error>>>()?;
+
+        Ok(Self(chains))
+    }
+}
+
 // Load all environment variables with their respective types
 load_env_vars!(
-    DISCORD_WEBHOOK: Url
+    DISCORD_WEBHOOK: Url,
+    CHAINS: Chains
 );

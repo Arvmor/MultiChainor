@@ -4,18 +4,12 @@ use MultiChainor::*;
 async fn main() -> Result<(), Box<dyn Error>> {
     // Initialize environment variables
     init_env_vars();
-    let chains = [
-        Url::from_str("wss://eth.merkle.io")?,
-        Url::from_str("wss://base.gateway.tenderly.co")?,
-        Url::from_str("wss://arbitrum.gateway.tenderly.co")?,
-        // Url::from_str("wss://avalanche.gateway.tenderly.co")?,
-        // Url::from_str("wss://polygon.gateway.tenderly.co")?,
-    ];
 
-    for chain in chains {
+    for chain in &CHAINS.0 {
         // Create a provider for each chain
-        let mut message = format!("Live with {chain} ");
-        let provider = ProviderBuilder::new().on_ws(WsConnect::new(chain)).await?;
+        let provider = ProviderBuilder::new()
+            .on_ws(WsConnect::new(chain.as_ref()))
+            .await?;
 
         tokio::spawn(async move {
             // Subscribe to logs for each provider
@@ -24,7 +18,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .await
                 .expect("Failed to subscribe to logs");
 
-            message += &stream.recv().await.is_ok().to_string();
+            let message = format!("Live with {chain} {}", stream.recv().await.is_ok());
             send_discord_message(message).ok();
 
             // Listen to logs
