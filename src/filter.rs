@@ -7,7 +7,14 @@ use alloy::{
 };
 
 pub fn build_locked_liquidity_filter() -> Filter {
-    Filter::new().select(BlockNumberOrTag::Latest)
+    let events = LogDecoder::LogDecoderEvents::SELECTORS
+        .iter()
+        .map(|e| e.into())
+        .collect::<Vec<_>>();
+
+    Filter::new()
+        .select(BlockNumberOrTag::Latest)
+        .event_signature(events)
 }
 
 pub fn decode_it(log: &Log) -> Option<(Address, U256)> {
