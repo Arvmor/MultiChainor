@@ -26,7 +26,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 if let Ok(log) = stream.recv().await {
                     // Decode the log
                     let decoded = match decode_it(&log) {
-                        Some((pool, date)) => format!("Address: {pool}, Unlock Date: {date}"),
+                        Some((pool, date)) => format!(
+                            "<@&1224787358789140520> Address: {pool}, Unlock Date: <t:{date}:R>"
+                        ),
                         None => continue,
                     };
 
