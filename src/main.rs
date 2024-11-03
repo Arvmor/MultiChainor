@@ -18,9 +18,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .await
                 .expect("Failed to subscribe to logs");
 
-            let message = format!("Live with {chain} {}", stream.recv().await.is_ok());
-            send_discord_message(message).ok();
-
             // Listen to logs
             loop {
                 match stream.recv().await {
