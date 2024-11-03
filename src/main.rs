@@ -2,6 +2,8 @@ use MultiChainor::*;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // Initialize environment variables
+    init_env_vars();
     let chains = [Url::from_str("wss://eth.merkle.io")?];
 
     for chain in chains {
@@ -17,8 +19,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
             // Listen to logs
             loop {
-                if let Ok(_log) = stream.recv().await {
+                if let Ok(log) = stream.recv().await {
+                    // Decode the log
+                    let decoded = decode_it(&log);
+                    if decoded.is_none() {
+                        continue;
+                    }
+
                     // Send a message to Discord
+                    send_discord_message(decoded).ok();
                 }
             }
         });
