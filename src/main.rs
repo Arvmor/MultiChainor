@@ -23,17 +23,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
             // Listen to logs
             loop {
-                if let Ok(log) = stream.recv().await {
+                match stream.recv().await {
                     // Decode the log
-                    let decoded = match decode_it(&log) {
-                        Some((pool, date)) => format!(
-                            "<@&1224787358789140520> Address: {pool}, Unlock Date: <t:{date}:R>"
-                        ),
-                        None => continue,
-                    };
+                    Ok(log) => {
+                        let decoded = match decode_it(&log) {
+                            Some((pool, date)) => {
+                                format!("Address: {pool}, Unlock Date: <t:{date}:R>")
+                            }
+                            None => continue,
+                        };
 
-                    // Send a message to Discord
-                    send_discord_message(decoded).ok();
+                        // Send a message to Discord
+                        send_discord_message(decoded).ok();
+                    }
+                    // Resubscribe if an error occurs
+                    Err(_) => stream = stream.resubscribe(),
                 }
             }
         });

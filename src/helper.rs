@@ -13,7 +13,7 @@ lazy_static! {
 pub fn send_discord_message(message: impl Serialize) -> Result<(), Box<dyn Error>> {
     // Struct a message to Discord
     let value = json!({
-        "content": "",
+        "content": "<@&1224787358789140520>",
         "embeds": [{
             "color": 5814783,
             "fields": [{
