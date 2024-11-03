@@ -1,7 +1,6 @@
 use crate::*;
 use dotenv::dotenv;
 use lazy_static::lazy_static;
-use std::time::Duration;
 use ureq::{json, serde::Serialize, Agent, AgentBuilder};
 
 lazy_static! {
