@@ -3,8 +3,12 @@ use alloy::{
     eips::BlockNumberOrTag,
     primitives::{Address, U256},
     rpc::types::Log,
+    sol,
     sol_types::SolEvent,
 };
+
+// Initialize the Events
+sol!(LogDecoder, "./abis.json");
 
 pub fn build_locked_liquidity_filter() -> Filter {
     let events = LogDecoder::LogDecoderEvents::SELECTORS
@@ -30,6 +34,13 @@ pub fn decode_it(log: &Log) -> Option<(Address, U256)> {
         LogDecoder::onLock::SIGNATURE_HASH => {
             if let Ok(data) = LogDecoder::onLock::decode_log(&log.inner, false) {
                 return Some((data.poolAddress, data.unlockDate));
+            }
+        }
+        // Floki
+        LogDecoder::VaultCreated::SIGNATURE_HASH => {
+            if let Ok(data) = LogDecoder::VaultCreated::decode_log(&log.inner, false) {
+                // TODO - Add locked liquidity Address
+                return Some((data.address, data.unlockTimestamp));
             }
         }
         _ => return None,
