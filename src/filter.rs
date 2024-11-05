@@ -1,7 +1,7 @@
 use crate::*;
 use alloy::{
     eips::BlockNumberOrTag,
-    primitives::{Address, U256},
+    primitives::{address, Address, U256},
     rpc::types::Log,
     sol,
     sol_types::SolEvent,
@@ -24,6 +24,17 @@ pub fn build_locked_liquidity_filter() -> Filter {
 pub fn decode_it(log: &Log) -> Option<(Address, U256)> {
     // Decode the log
     match *log.topic0()? {
+        // Normal Transfer
+        LogDecoder::Transfer::SIGNATURE_HASH => {
+            if let Ok(data) = LogDecoder::Transfer::decode_log(&log.inner, false) {
+                // If burn
+                if data.dst == Address::ZERO
+                    || data.dst == address!("000000000000000000000000000000000000dEaD")
+                {
+                    return Some((data.address, U256::ZERO));
+                }
+            }
+        }
         // UNCX V2
         LogDecoder::onDeposit::SIGNATURE_HASH => {
             if let Ok(data) = LogDecoder::onDeposit::decode_log(&log.inner, false) {
