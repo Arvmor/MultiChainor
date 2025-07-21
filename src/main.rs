@@ -1,20 +1,22 @@
-use MultiChainor::*;
+use alloy::providers::{Provider, ProviderBuilder, WsConnect};
+use std::time::Duration;
+use tokio::time::sleep;
+
+mod filter;
+mod helper;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    // Initialize environment variables
-    init_env_vars();
-
-    for chain in &CHAINS.0 {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    for chain in &helper::CHAINS.0 {
         // Create a provider for each chain
         let provider = ProviderBuilder::new()
-            .on_ws(WsConnect::new(chain.as_ref()))
+            .connect_ws(WsConnect::new(chain.as_ref()))
             .await?;
 
         tokio::spawn(async move {
             // Subscribe to logs for each provider
             let mut stream = provider
-                .subscribe_logs(&build_locked_liquidity_filter())
+                .subscribe_logs(&filter::build_locked_liquidity_filter())
                 .await
                 .expect("Failed to subscribe to logs");
 
@@ -23,15 +25,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 match stream.recv().await {
                     // Decode the log
                     Ok(log) => {
-                        let decoded = match decode_it(&log) {
-                            Some((pool, date)) => {
-                                format!("Address: {pool}, Unlock Date: <t:{date}:R>")
-                            }
-                            None => continue,
-                        };
+                        if let Some((pool, date)) = filter::decode_it(&log) {
+                            let decoded = format!("Address: {pool}, Unlock Date: <t:{date}:R>");
 
-                        // Send a message to Discord
-                        send_discord_message(decoded).ok();
+                            // Send a message to Discord
+                            helper::send_discord_message(decoded).ok();
+                        }
                     }
                     // Resubscribe if an error occurs
                     Err(_) => stream = stream.resubscribe(),
