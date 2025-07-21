@@ -1,6 +1,6 @@
 use alloy::{
     eips::BlockNumberOrTag,
-    primitives::{Address, U256, address},
+    primitives::{Address, U256},
     rpc::types::{Filter, Log},
     sol,
     sol_types::SolEvent,
